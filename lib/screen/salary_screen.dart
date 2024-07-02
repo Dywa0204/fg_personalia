@@ -1,5 +1,4 @@
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:flutter_share/flutter_share.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
@@ -47,10 +46,10 @@ class _SalaryScreenState extends State<SalaryScreen> {
 
   Future<void> downloadFile(BuildContext context) async {
     try {
-      await FlutterShare.shareFile(
-        title: 'Download Slip Gaji',
-        filePath: Pfile!.path,
-      );
+      // await FlutterShare.shareFile(
+      //   title: 'Download Slip Gaji',
+      //   filePath: Pfile!.path,
+      // );
     } catch (e) {
       print('Error sharing file: $e');
       CustomSnackBar.of(context).show(
