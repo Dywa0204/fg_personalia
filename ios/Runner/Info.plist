@@ -55,5 +55,7 @@
     <string>App app want's to access your location to get address.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>App want's to access your location to get address.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take photos.</string>
 </dict>
 </plist>
