@@ -3,6 +3,8 @@ import 'package:fgsdm/screen/main_screen.dart';
 import 'package:fgsdm/screen/splash_screen.dart';
 import 'package:fgsdm/utils/general_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+// import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +12,16 @@ Future<void> main() async {
   await GeneralHelper.initializeFirstCamera();
   await GeneralHelper.initializeApp();
 
-  runApp(const MyApp());
+  await SentryFlutter.init(
+        (options) {
+      options.dsn = 'https://f69daa4498e66fb69b1902a1f0a3ff97@o4507530639310848.ingest.us.sentry.io/4507530930487296';
+      options.tracesSampleRate = 1.0;
+      options.profilesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(MyApp())
+  );
+
+  // runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

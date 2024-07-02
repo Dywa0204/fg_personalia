@@ -5,6 +5,7 @@ import 'package:fgsdm/utils/general_helper.dart';
 import 'package:fgsdm/widget/responsive/responsive_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../model/leave.dart';
 import '../model/overtime.dart';
@@ -64,7 +65,17 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSize: MainAxisSize.max,
         children: [
           TextButton(
-            onPressed: () => throw Exception(),
+            onPressed: () async {
+              try {
+                throw Exception('Contoh error: sesuatu yang tidak berfungsi.');
+              } catch (exception, stackTrace) {
+                print("aaaaaa");
+                await Sentry.captureException(
+                  exception,
+                  stackTrace: stackTrace,
+                );
+              }
+            },
             child: const Text("Throw Test Exception"),
           ),
 
