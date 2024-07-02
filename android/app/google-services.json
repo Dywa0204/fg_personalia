@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "902363470595",
+    "project_id": "dywa-pratama",
+    "storage_bucket": "dywa-pratama.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:902363470595:android:2bda428c738533030c6736",
+        "android_client_info": {
+          "package_name": "com.farmagitechs.personalia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "902363470595-3gjfe65pde7kas67jje84klqdi48bi5u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVjG33pTdqI8ftBME-l4ggPjwTcXWixqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "902363470595-3gjfe65pde7kas67jje84klqdi48bi5u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
