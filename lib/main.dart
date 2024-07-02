@@ -1,30 +1,14 @@
-import 'dart:ui';
-
 import 'package:fgsdm/screen/login_screen.dart';
 import 'package:fgsdm/screen/main_screen.dart';
 import 'package:fgsdm/screen/splash_screen.dart';
 import 'package:fgsdm/utils/general_helper.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await GeneralHelper.initializeFirstCamera();
   await GeneralHelper.initializeApp();
-
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp();
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
 
   runApp(const MyApp());
 }
