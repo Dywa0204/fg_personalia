@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:io' show Platform;
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -252,6 +251,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                           cameraType: CameraType.image
                       )
                   );
+                  _justTest("a${image.path}");
                   await _cropImage(item: image);
                 } else {
                   final image = await _picker.openCamera(
@@ -259,19 +259,35 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                           cameraType: CameraType.image
                       )
                   );
+                  _justTest("b${image.path}");
                   await _cropImage(item: image);
                 }
               } else {
-                final images = await _pickerIOS.openPicker(
-                  pickerOptions: HLPickerOptions(
-                      mediaType: MediaType.image,
-                      usedCameraButton: false,
-                      maxSelectedAssets: 1
-                  ),
-                );
+                if (Platform.isIOS) {
+                  final images = await _pickerIOS.openPicker(
+                    pickerOptions: HLPickerOptions(
+                        mediaType: MediaType.image,
+                        usedCameraButton: false,
+                        maxSelectedAssets: 1
+                    ),
+                  );
 
-                HLPickerItem selected = images.first;
-                await _cropImage(item: selected);
+                  HLPickerItem selected = images.first;
+                  _justTest("c${selected.path}");
+                  await _cropImage(item: selected);
+                } else {
+                  final images = await _picker.openPicker(
+                    pickerOptions: HLPickerOptions(
+                        mediaType: MediaType.image,
+                        usedCameraButton: false,
+                        maxSelectedAssets: 1
+                    ),
+                  );
+
+                  HLPickerItem selected = images.first;
+                  _justTest("d${selected.path}");
+                  await _cropImage(item: selected);
+                }
               }
             } catch (e) {
               setState(() {
@@ -304,14 +320,15 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   }
 
   Future<void> _cropImage({required HLPickerItem item}) async {
+    _justTest("e${item.path}");
     try {
-
       if (Platform.isIOS) {
         final image = await _pickerIOS.openCropper(item.path,
             cropOptions: HLCropOptions(
                 aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
             )
         );
+        _justTest("f${_selectedImage?.path}");
         setState(() {
           _selectedImage = image;
           _errorText = item.path;
@@ -327,6 +344,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
           _selectedImage = image;
           _errorText = item.path;
         });
+        _justTest("g${_selectedImage?.path}");
         _convertImageToBase64(image);
       }
 
@@ -473,5 +491,16 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
         duration: Duration(seconds: 5),
       );
     }
+  }
+
+  _justTest(String message) {
+    CustomSnackBar.of(context).show(
+      message: message,
+      onTop: false,
+      showCloseIcon: true,
+      prefixIcon: Icons.warning,
+      backgroundColor: CustomColor.error,
+      duration: Duration(seconds: 5),
+    );
   }
 }
