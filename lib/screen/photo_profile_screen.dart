@@ -246,47 +246,45 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
             try {
               if (text == "Kamera") {
                 if (Platform.isIOS) {
-                  final image = await _pickerIOS.openCamera(
+                  _pickerIOS.openCamera(
                       cameraOptions: HLCameraOptions(
                           cameraType: CameraType.image
                       )
-                  );
-                  _justTest("a${image.path}");
-                  await _cropImage(item: image);
+                  ).then((image) {
+                    _cropImage(item: image);
+                  });
                 } else {
-                  final image = await _picker.openCamera(
+                  _picker.openCamera(
                       cameraOptions: HLCameraOptions(
                           cameraType: CameraType.image
                       )
-                  );
-                  _justTest("b${image.path}");
-                  await _cropImage(item: image);
+                  ).then((image) {
+                    _cropImage(item: image);
+                  });
                 }
               } else {
                 if (Platform.isIOS) {
-                  final images = await _pickerIOS.openPicker(
+                  _pickerIOS.openPicker(
                     pickerOptions: HLPickerOptions(
                         mediaType: MediaType.image,
                         usedCameraButton: false,
                         maxSelectedAssets: 1
                     ),
-                  );
-
-                  HLPickerItem selected = images.first;
-                  _justTest("c${selected.path}");
-                  await _cropImage(item: selected);
+                  ).then((images) {
+                    HLPickerItem selected = images.first;
+                    _cropImage(item: selected);
+                  });
                 } else {
-                  final images = await _picker.openPicker(
+                  _picker.openPicker(
                     pickerOptions: HLPickerOptions(
                         mediaType: MediaType.image,
                         usedCameraButton: false,
                         maxSelectedAssets: 1
                     ),
-                  );
-
-                  HLPickerItem selected = images.first;
-                  _justTest("d${selected.path}");
-                  await _cropImage(item: selected);
+                  ).then((images) {
+                    HLPickerItem selected = images.first;
+                    _cropImage(item: selected);
+                  });
                 }
               }
             } catch (e) {
