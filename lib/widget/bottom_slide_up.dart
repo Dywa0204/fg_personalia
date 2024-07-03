@@ -11,6 +11,7 @@ class BottomSlideUp extends StatefulWidget {
   final Widget? headerMore;
   final Function(PanelController)? onPanelCreated;
   final VoidCallback? onPanelOpen;
+  final double? maxHeight;
 
   BottomSlideUp({
     Key? key,
@@ -22,7 +23,7 @@ class BottomSlideUp extends StatefulWidget {
     this.onPanelClosed,
     this.header,
     this.onPanelOpen,
-    this.headerMore,
+    this.headerMore, this.maxHeight,
   }) : super(key: key);
 
   @override
@@ -45,13 +46,14 @@ class BottomSlideUpState extends State<BottomSlideUp> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    maxHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).viewPadding.top - 48;
+    maxHeight = widget.maxHeight ?? MediaQuery.of(context).size.height - MediaQuery.of(context).viewPadding.top - 48;
     minHeight = 0;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: SlidingUpPanel(
         backdropEnabled: true,
         controller: panelController,

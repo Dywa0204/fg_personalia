@@ -12,6 +12,8 @@ import 'package:fgsdm/widget/location_widget.dart';
 import 'package:fgsdm/widget/responsive/responsive_container.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -238,13 +240,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _navbarResponsiveIcon({
-    required int index,
-    required int selectedIndex,
-    required IconData icon,
-    required String text,
-    required VoidCallback onSelected,
-  }) {
+  Widget _navbarResponsiveIcon({ required int index, required int selectedIndex, required IconData icon, required String text, required VoidCallback onSelected}) {
     final isSelected = index == selectedIndex;
     final color = isSelected ? CustomColor.primary : CustomColor.gray200;
 
@@ -360,55 +356,63 @@ class _MainScreenState extends State<MainScreen> {
   _processAttendance() async {
     try {
       String? address = _locationWidgetController.getCurrentAddressStr();
-      LocationData? locationData = _locationWidgetController.getCurrentLocation();
-      User? user = await GeneralHelper.getUserFromPreferences();
 
-      // print("id_karyawan: " + user!.idKaryawan);
-      // print("Latitude: ${locationData?.latitude ?? "0.0"}");
-      // print("Longitude: ${locationData?.longitude ?? "0.0"}");
-      // print("Location: ${address ?? "0.0"}");
-      // print("foto: data:image/png;base64,${_storedImage}");
-
-      LoadingDialog.of(context).show(message: "Tunggu Sebentar...", isDismissible: false);
-
-      String attendanceMessage = await _attendanceController.add(
-          idKaryawan: user!.idKaryawan,
-          latitude: "${locationData?.latitude ?? "0.0"}",
-          longitude: "${locationData?.longitude ?? "0.0"}",
-          status: "${_isAttendanceIN ? "IN" : "OUT"}",
-          location: "${address ?? "Lokasi tidak ditemukan"}",
-          foto: "data:image/png;base64,${_storedImage}"
-      );
-      LoadingDialog.of(context).hide();
-
-      if (!attendanceMessage.isEmpty) {
-        CustomSnackBar.of(context).show(
-            message: attendanceMessage,
-            onTop: true,
-            showCloseIcon: true,
-            prefixIcon: Icons.check_circle,
-            backgroundColor: CustomColor.success,
-          duration: Duration(seconds: 5)
-        );
-
-        setState(() {
-          _isAttendanceIN = !_isAttendanceIN;
-        });
-        print("status: ${_isAttendanceIN ? "IN" : "OUT"}");
-        await GeneralHelper.preferences.setBool("isAttendanceIN", _isAttendanceIN);
-
-        _slideUpPanelController.close();
-        _attendanceScreenController.refreshData();
+      if (address!.contains("Memuat lokasi")) {
+        _showStillLoadDialog();
+      } else if (address.contains("Lokasi tidak ditemukan")) {
+        _showUnknownDialog();
       } else {
-        CustomSnackBar.of(context).show(
-          message: "Gagal melakukan presensi",
-          onTop: true,
-          showCloseIcon: true,
-          prefixIcon: Icons.warning,
-          backgroundColor: CustomColor.error,
-          duration: Duration(seconds: 5)
+        LocationData? locationData = _locationWidgetController.getCurrentLocation();
+        User? user = await GeneralHelper.getUserFromPreferences();
+
+        // print("id_karyawan: " + user!.idKaryawan);
+        // print("Latitude: ${locationData?.latitude ?? "0.0"}");
+        // print("Longitude: ${locationData?.longitude ?? "0.0"}");
+        // print("Location: ${address ?? "0.0"}");
+        // print("foto: data:image/png;base64,${_storedImage}");
+
+        LoadingDialog.of(context).show(message: "Tunggu Sebentar...", isDismissible: false);
+
+        String attendanceMessage = await _attendanceController.add(
+            idKaryawan: user!.idKaryawan,
+            latitude: "${locationData?.latitude ?? "0.0"}",
+            longitude: "${locationData?.longitude ?? "0.0"}",
+            status: "${_isAttendanceIN ? "IN" : "OUT"}",
+            location: "${address}",
+            foto: "data:image/png;base64,${_storedImage}"
         );
+        LoadingDialog.of(context).hide();
+
+        if (!attendanceMessage.isEmpty) {
+          CustomSnackBar.of(context).show(
+              message: attendanceMessage,
+              onTop: true,
+              showCloseIcon: true,
+              prefixIcon: Icons.check_circle,
+              backgroundColor: CustomColor.success,
+              duration: Duration(seconds: 5)
+          );
+
+          setState(() {
+            _isAttendanceIN = !_isAttendanceIN;
+          });
+          print("status: ${_isAttendanceIN ? "IN" : "OUT"}");
+          await GeneralHelper.preferences.setBool("isAttendanceIN", _isAttendanceIN);
+
+          _slideUpPanelController.close();
+          _attendanceScreenController.refreshData();
+        } else {
+          CustomSnackBar.of(context).show(
+              message: "Gagal melakukan presensi",
+              onTop: true,
+              showCloseIcon: true,
+              prefixIcon: Icons.warning,
+              backgroundColor: CustomColor.error,
+              duration: Duration(seconds: 5)
+          );
+        }
       }
+
 
     } catch (error) {
       LoadingDialog.of(context).hide();
@@ -441,6 +445,26 @@ class _MainScreenState extends State<MainScreen> {
     } catch(e) {
 
     }
+  }
+
+  void _showStillLoadDialog() {
+    QuickAlert.show(
+      context: context,
+      confirmBtnText: "Oke",
+      type: QuickAlertType.error,
+      title: "Masih memuat lokasi",
+      text: 'Harap tunggu sebentar dan coba lagi',
+    );
+  }
+
+  void _showUnknownDialog() {
+    QuickAlert.show(
+      context: context,
+      confirmBtnText: "Oke",
+      type: QuickAlertType.error,
+      title: "Lokasi tidak ditemukan",
+      text: 'Periksa kembali koneksi internet Anda..',
+    );
   }
 }
 
@@ -518,7 +542,7 @@ class _CameraButtonWidgetState extends State<CameraButtonWidget> {
       children: [
         Container(
           color: Colors.black.withOpacity(0.5),
-          padding: const EdgeInsets.only(bottom: 48, top: 24),
+          padding: const EdgeInsets.only(bottom: 24, top: 24),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

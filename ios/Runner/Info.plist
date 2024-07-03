@@ -55,11 +55,18 @@
     <string>App app want's to access your location to get address.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>App want's to access your location to get address.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>We need access to your camera to take photos.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
     <key>NSMicrophoneUsageDescription</key>
-    <string>We need access to your microphone to take photos.</string>
+    <string>...</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>...</string>
+    <key>NSCameraUsageDescription</key>
+    <string>...</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need access to your camera to take photos.</string>
+    <string>...</string>
 </dict>
 </plist>

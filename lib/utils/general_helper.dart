@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:camera/camera.dart';
 import 'package:fgsdm/constant/environment.dart';
@@ -46,7 +47,7 @@ class GeneralHelper {
 
   static Future<void> initializeFirstCamera() async {
     availableCamera = await availableCameras();
-    firstCamera = availableCamera.last;
+    firstCamera = Platform.isAndroid ? availableCamera.last : availableCamera.first;
     await requestLocationPermission();
   }
 
@@ -113,7 +114,6 @@ class GeneralHelper {
   }
 
   static double calculateSize(BuildContext context, double size) {
-    print("scaling factor: $scalingPercentage");
     double baseSize = size;
     double screenWidth = MediaQuery.of(context).size.width;
     double scalingFactor = screenWidth / scalingFactorDivide;

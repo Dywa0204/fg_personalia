@@ -454,7 +454,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         confirmBtnText: "Oke",
         type: QuickAlertType.error,
         title: "Masih memuat lokasi",
-        text: 'Harap tunggu sebentar, pastikan Anda terhubung dengan internet..',
+        text: 'Harap tunggu sebentar dan coba lagi',
     );
   }
 

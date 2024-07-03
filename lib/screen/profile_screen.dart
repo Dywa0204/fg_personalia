@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:fgsdm/constant/custom_colors.dart';
 import 'package:fgsdm/controller/user.dart';
 import 'package:fgsdm/model/user.dart';
 import 'package:fgsdm/screen/about_screen.dart';
 import 'package:fgsdm/screen/login_screen.dart';
 import 'package:fgsdm/screen/main_screen.dart';
+import 'package:fgsdm/screen/photo_profile_screen.dart';
 import 'package:fgsdm/screen/setting_screen.dart';
 import 'package:fgsdm/utils/general_helper.dart';
 import 'package:fgsdm/widget/custom/custom_button.dart';
@@ -28,6 +31,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserController _userController = UserController();
   late String _idKaryawan = "0";
 
+  bool _showSalary = false;
+
+  String? _thumbnail;
+  String _imageBase64 = "";
+
   @override
   void initState() {
     super.initState();
@@ -39,10 +47,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     setState(() {
       _user = user;
+      _imageBase64 = user.avatar!.replaceAll("data:image/png;base64,", "");
     });
   }
 
   void _initializeUser() async {
+    _thumbnail = await GeneralHelper.preferences.getString("avatarThumbnail") ?? "";
+
     await GeneralHelper.getUserFromPreferences().then((value) {
       _idKaryawan = "${value?.idKaryawan}";
       setState(() {
@@ -63,14 +74,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    ResponsiveContainer(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: CustomColor.primary,
+                    InkWell(
+                      onTap: () async {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => PhotoProfileScreen(
+                            gender: _user!.jekel!,
+                            idKaryawan: _idKaryawan,
+                            avatar: _thumbnail,
+                            onClose: (isReload) {
+                              if (isReload) _updateAvatar();
+                            },
+                          ))
+                        );
+                      },
+                      child: ResponsiveContainer(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: CustomColor.primary,
+                        ),
+                        child: ClipRRect(
+                          child: _buildImage(),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      child: ResponsiveImage("assets/images/${_user?.jekel == "L" ? "male" : "female"}.png", width: 150, height: 150,),
                     ),
                     SizedBox(width: 16,),
                     Expanded(
@@ -239,15 +267,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               Flexible(
                                 fit: FlexFit.loose,
-                                child: ResponsiveText(
-                                  "Rp ${_user?.gajiPokok}" ?? "-",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black,
-                                      fontSize: 17),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
+                                child: Row(
+                                  children: [
+                                    ResponsiveText(
+                                      "${_showSalary ? "Rp ${_user?.gajiPokok}" : "•••••••••"}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black,
+                                          fontSize: 17),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _showSalary = !_showSalary;
+                                        });
+                                      },
+                                      child: ResponsiveImage(
+                                        "assets/icons/${_showSalary ? "visible" : "invisible"}.png",
+                                        width: 32,
+                                        height: 32,
+                                      ),
+                                    )
+                                  ],
+                                )
                               ),
                             ],
                           ),
@@ -493,5 +537,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  _updateAvatar() async {
+    String thumbnail = await GeneralHelper.preferences.getString("avatarThumbnail") ?? "";
+    setState(() {
+      _thumbnail = thumbnail;
+    });
+
+    _initializeUser();
+  }
+
+  Widget _buildImage() {
+    if (_imageBase64.isNotEmpty) {
+      return Image.memory(
+        base64Decode(_imageBase64),
+        fit: BoxFit.fill,
+      );
+    } else if (_thumbnail != null && _thumbnail!.isNotEmpty) {
+      return Image.memory(
+        base64Decode(_thumbnail!),
+        fit: BoxFit.fill,
+      );
+    } else {
+      String imagePath = "assets/images/${_user?.jekel == "L" ? "male" : "female"}.png";
+      return Image.asset(
+        imagePath,
+        width: 150,
+        height: 150,
+        fit: BoxFit.fill,
+      );
+    }
   }
 }

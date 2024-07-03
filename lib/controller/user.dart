@@ -58,4 +58,27 @@ class UserController {
       throw "Terjadi kesalahan internal server";
     }
   }
+
+  Future<bool> changeAvatar({required String idKaryawan, required String base64}) async {
+    final response = await http.post(
+      Uri.parse("${_baseUrl}Android/auth/change_avatar"),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'id_karyawan': idKaryawan,
+        'foto': base64
+      }),
+    );
+
+    print("Response body: " + response.body);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> json = jsonDecode(response.body);
+      return json["status"];
+    } else {
+      print("Change Avatar error: ${response.reasonPhrase}");
+      throw "Gagal mengubah foto profil! Terjadi kesalahan internal server";
+    }
+  }
 }

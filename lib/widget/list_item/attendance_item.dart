@@ -263,7 +263,7 @@ class AttendanceItem extends StatelessWidget {
         } else {
           DateTime timeIn = DateTime.parse("2024-01-01 $masuk:00");
           DateTime timeOut = DateTime.parse("2024-01-01 $keluar:00");
-          Duration difference = timeOut.difference(timeIn);
+          Duration difference = timeOut.difference(timeIn) - Duration(minutes: 30);
 
           int hours = difference.inHours;
           int minutes = difference.inMinutes % 60;

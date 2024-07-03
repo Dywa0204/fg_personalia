@@ -21,6 +21,7 @@ class User {
   final String? idStatusPtkp;
   final String? hiddenStatus;
   final String? jabatan;
+  final String? avatar;
 
 
   User({
@@ -45,7 +46,8 @@ class User {
     required this.nama,
     required this.user,
     required this.level,
-    required this.code
+    required this.code,
+    this.avatar
   });
 
   factory User.fromJsonLogin(Map<String, dynamic> json) {
@@ -85,6 +87,7 @@ class User {
       idStatusPtkp: json['id_status_ptkp'],
       hiddenStatus: json['hidden_status'],
       jabatan: json['jabatan'],
+      avatar: json['avatar']
     );
     return user;
   }
