@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:io' show Platform;
 import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:fgsdm/utils/general_helper.dart';
+import 'package:hl_image_picker_ios/hl_image_picker_ios.dart';
 import 'package:image/image.dart' as img;
 import 'package:fgsdm/widget/bottom_slide_up.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +39,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   late PanelController _slideUpPanelController;
 
   final _picker = HLImagePicker();
+  final _pickerIOS = HLImagePickerIOS();
   HLPickerItem? _selectedImage;
   String? _thumbnail;
 
@@ -243,15 +246,23 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
           onTap: () async {
             try {
               if (text == "Kamera") {
-                final image = await _picker.openCamera(
-                    cameraOptions: HLCameraOptions(
-                        cameraType: CameraType.image
-                    )
-                );
-                await _cropImage(item: image);
-
+                if (Platform.isIOS) {
+                  final image = await _pickerIOS.openCamera(
+                      cameraOptions: HLCameraOptions(
+                          cameraType: CameraType.image
+                      )
+                  );
+                  await _cropImage(item: image);
+                } else {
+                  final image = await _picker.openCamera(
+                      cameraOptions: HLCameraOptions(
+                          cameraType: CameraType.image
+                      )
+                  );
+                  await _cropImage(item: image);
+                }
               } else {
-                final images = await _picker.openPicker(
+                final images = await _pickerIOS.openPicker(
                   pickerOptions: HLPickerOptions(
                       mediaType: MediaType.image,
                       usedCameraButton: false,
@@ -295,16 +306,29 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   Future<void> _cropImage({required HLPickerItem item}) async {
     try {
 
-      final image = await _picker.openCropper(item.path,
-          cropOptions: HLCropOptions(
-              aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
-          )
-      );
-      setState(() {
-        _selectedImage = image;
-        _errorText = item.path;
-      });
-      _convertImageToBase64(image);
+      if (Platform.isIOS) {
+        final image = await _pickerIOS.openCropper(item.path,
+            cropOptions: HLCropOptions(
+                aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
+            )
+        );
+        setState(() {
+          _selectedImage = image;
+          _errorText = item.path;
+        });
+        _convertImageToBase64(image);
+      } else {
+        final image = await _picker.openCropper(item.path,
+            cropOptions: HLCropOptions(
+                aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
+            )
+        );
+        setState(() {
+          _selectedImage = image;
+          _errorText = item.path;
+        });
+        _convertImageToBase64(image);
+      }
 
     } catch (e) {
       setState(() {

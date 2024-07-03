@@ -60,6 +60,8 @@
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
+    <key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
+    <true/>
     <key>NSMicrophoneUsageDescription</key>
     <string>...</string>
     <key>NSPhotoLibraryAddUsageDescription</key>

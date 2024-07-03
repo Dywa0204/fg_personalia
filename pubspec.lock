@@ -441,7 +441,7 @@ packages:
     source: hosted
     version: "1.2.11"
   hl_image_picker_ios:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: hl_image_picker_ios
       sha256: "70ef73e2736514c1a5f53d97086fdce00e5b01ec002435daeafc406450123e1f"
