@@ -47,6 +47,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   bool _isAvatar = true;
   bool _isCanDelete = false;
   bool _isEdited = false;
+  String _errorText = "";
 
   @override
   void initState() {
@@ -163,6 +164,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                     ),
                   ),
                 ),
+                Text(_errorText, style: TextStyle(color: Colors.white),),
 
                 Container(
                   padding: EdgeInsets.only(top: 24, bottom: 0, right: 24, left: 24),
@@ -261,6 +263,9 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                 await _cropImage(item: selected);
               }
             } catch (e) {
+              setState(() {
+                _errorText = e.toString();
+              });
               print(e.toString());
             }
           },
@@ -289,6 +294,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
 
   Future<void> _cropImage({required HLPickerItem item}) async {
     try {
+
       final image = await _picker.openCropper(item.path,
           cropOptions: HLCropOptions(
               aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
@@ -296,10 +302,14 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
       );
       setState(() {
         _selectedImage = image;
+        _errorText = item.path;
       });
       _convertImageToBase64(image);
 
     } catch (e) {
+      setState(() {
+        _errorText = e.toString();
+      });
       print(e.toString());
     }
   }
