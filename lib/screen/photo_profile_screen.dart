@@ -9,6 +9,7 @@ import 'package:image/image.dart' as img;
 import 'package:fgsdm/widget/bottom_slide_up.dart';
 import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
+import 'package:image_cropper/image_cropper.dart' as image_cropper;
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -21,6 +22,7 @@ import '../widget/loading_dialog.dart';
 import '../widget/responsive/responsive_container.dart';
 import '../widget/responsive/responsive_icon.dart';
 import '../widget/responsive/responsive_text.dart';
+import 'package:photo_view/photo_view.dart';
 
 class PhotoProfileScreen extends StatefulWidget {
   final String? avatar;
@@ -49,7 +51,6 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   bool _isAvatar = true;
   bool _isCanDelete = false;
   bool _isEdited = false;
-  String _errorText = "";
 
   @override
   void initState() {
@@ -166,7 +167,6 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                     ),
                   ),
                 ),
-                Text(_errorText, style: TextStyle(color: Colors.white),),
 
                 Container(
                   padding: EdgeInsets.only(top: 24, bottom: 0, right: 24, left: 24),
@@ -198,34 +198,35 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
 
   Widget _buildImage() {
     if (_imageBase64.isNotEmpty) {
-      return Image.memory(
-        base64Decode(_imageBase64),
-        fit: BoxFit.fill,
+      return PhotoView(
+        imageProvider: MemoryImage(
+          base64Decode(_imageBase64),
+        )
       );
     } else if (_thumbnail != null && _thumbnail!.isNotEmpty) {
-      return Image.memory(
-        base64Decode(_thumbnail!),
-        fit: BoxFit.fill,
+      return PhotoView(
+        imageProvider: MemoryImage(
+          base64Decode(_thumbnail!),
+        ),
       );
     } else if (_selectedImage != null) {
-      return Image.file(
-        File(_selectedImage!.path),
-        width: 150,
-        height: 150,
-        fit: BoxFit.fill,
+      return PhotoView(
+        imageProvider: FileImage(
+          File(_selectedImage!.path),
+        ),
       );
     } else if (widget.avatar != null && _isAvatar &&  widget.avatar!.isNotEmpty) {
-      return Image.memory(
-        base64Decode(widget.avatar!),
-        fit: BoxFit.fill,
+      return PhotoView(
+        imageProvider: MemoryImage(
+          base64Decode(widget.avatar!),
+        ),
       );
     } else {
       String imagePath = "assets/images/${widget.gender == "L" ? "male" : "female"}_full.png";
-      return Image.asset(
-        imagePath,
-        width: 150,
-        height: 150,
-        fit: BoxFit.fill,
+      return PhotoView(
+        imageProvider: AssetImage(
+          imagePath,
+        ),
       );
     }
   }
@@ -288,9 +289,6 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                 }
               }
             } catch (e) {
-              setState(() {
-                _errorText = e.toString();
-              });
               print(e.toString());
             }
           },
@@ -318,38 +316,37 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   }
 
   Future<void> _cropImage({required HLPickerItem item}) async {
-    _justTest("e${item.path}");
     try {
-      if (Platform.isIOS) {
-        final image = await _pickerIOS.openCropper(item.path,
-            cropOptions: HLCropOptions(
-                aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
-            )
-        );
-        _justTest("f${_selectedImage?.path}");
-        setState(() {
-          _selectedImage = image;
-          _errorText = item.path;
-        });
-        _convertImageToBase64(image);
-      } else {
-        final image = await _picker.openCropper(item.path,
-            cropOptions: HLCropOptions(
-                aspectRatio: CropAspectRatio(ratioY: 1, ratioX: 1)
-            )
-        );
-        setState(() {
-          _selectedImage = image;
-          _errorText = item.path;
-        });
-        _justTest("g${_selectedImage?.path}");
-        _convertImageToBase64(image);
-      }
+      image_cropper.CroppedFile? croppedFile = await image_cropper.ImageCropper().cropImage(
+        sourcePath: item.path,
+        uiSettings: [
+          image_cropper.AndroidUiSettings(
+            toolbarTitle: 'Crop Foto',
+            toolbarColor: CustomColor.secondary,
+            toolbarWidgetColor: Colors.black,
+            lockAspectRatio: true,
+            initAspectRatio: image_cropper.CropAspectRatioPreset.square,
+            aspectRatioPresets: [
+              image_cropper.CropAspectRatioPreset.square
+            ],
+          ),
+          image_cropper.IOSUiSettings(
+            title: 'Crop Foto',
+            aspectRatioPresets: [
+              image_cropper.CropAspectRatioPreset.square,
+            ],
+          ),
+        ],
+      );
+
+      _selectedImage = HLPickerItem(
+        path: croppedFile!.path,
+        id: "", name: "name", mimeType: "mimeType", size: 0, width: 0,
+        height: 0, type: "type"
+      );
+      _convertImageToBase64(_selectedImage!);
 
     } catch (e) {
-      setState(() {
-        _errorText = e.toString();
-      });
       print(e.toString());
     }
   }
@@ -365,9 +362,11 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
 
       final thumbnailByte = await _getThumbnail(image);
       if (thumbnailByte != null) {
+
         setState(() {
           _thumbnail = base64Encode(thumbnailByte);
         });
+
         await GeneralHelper.preferences.setString("avatarThumbnail", base64Encode(thumbnailByte));
 
         bool isSuccess = await _userController.changeAvatar(idKaryawan: widget.idKaryawan, base64: base64);
@@ -380,51 +379,24 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
             _isCanDelete = true;
             _isEdited = true;
           });
-
-          CustomSnackBar.of(context).show(
-            message: "Berhasil mengupload foto",
-            onTop: false,
-            showCloseIcon: true,
-            prefixIcon: Icons.check_circle,
-            backgroundColor: CustomColor.success,
-            duration: Duration(seconds: 5),
-          );
+          GeneralHelper.isProfileUpdate = true;
+          _showSnackBar("Berhasil mengupload foto", 2);
         } else {
           setState(() {
             _thumbnail = null;
             _selectedImage = null;
           });
-          CustomSnackBar.of(context).show(
-            message: "Gagal mengupload foto",
-            onTop: false,
-            showCloseIcon: true,
-            prefixIcon: Icons.warning,
-            backgroundColor: CustomColor.error,
-            duration: Duration(seconds: 5),
-          );
+          _showSnackBar("Gagal mengupload foto", 1);
         }
       } else {
         LoadingDialog.of(context).hide();
-        CustomSnackBar.of(context).show(
-          message: "Gagal membuat thumbnail",
-          onTop: false,
-          showCloseIcon: true,
-          prefixIcon: Icons.warning,
-          backgroundColor: CustomColor.error,
-          duration: Duration(seconds: 5),
-        );
+        _showSnackBar("Gagal membuat thumbnail", 1);
       }
 
     } catch (e) {
       LoadingDialog.of(context).hide();
-      CustomSnackBar.of(context).show(
-        message: "Gagal memuat foto",
-        onTop: false,
-        showCloseIcon: true,
-        prefixIcon: Icons.warning,
-        backgroundColor: CustomColor.error,
-        duration: Duration(seconds: 5),
-      );
+
+      _showSnackBar("Gagal memuat foto", 1);
     }
   }
 
@@ -444,6 +416,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
 
   _deleteAvatar() async {
     LoadingDialog.of(context).show(message: "Menghapus foto...", isDismissible: true);
+
     try {
       bool isSuccess = await _userController.changeAvatar(idKaryawan: widget.idKaryawan, base64: "");
 
@@ -459,45 +432,25 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
           _isCanDelete = false;
           _isEdited = true;
         });
+        GeneralHelper.isProfileUpdate;
 
-        CustomSnackBar.of(context).show(
-          message: "Berhasil menghapus foto",
-          onTop: false,
-          showCloseIcon: true,
-          prefixIcon: Icons.check_circle,
-          backgroundColor: CustomColor.success,
-          duration: Duration(seconds: 5),
-        );
+        _showSnackBar("Berhasil mebghapus foto", 2);
       } else {
-        CustomSnackBar.of(context).show(
-          message: "Gagal menghapus foto",
-          onTop: false,
-          showCloseIcon: true,
-          prefixIcon: Icons.warning,
-          backgroundColor: CustomColor.error,
-          duration: Duration(seconds: 5),
-        );
+        _showSnackBar("Gagal mebghapus foto", 1);
       }
     } catch (e) {
       LoadingDialog.of(context).hide();
-      CustomSnackBar.of(context).show(
-        message: "Gagal mebghapus foto",
-        onTop: false,
-        showCloseIcon: true,
-        prefixIcon: Icons.warning,
-        backgroundColor: CustomColor.error,
-        duration: Duration(seconds: 5),
-      );
+      _showSnackBar("Gagal mebghapus foto", 1);
     }
   }
 
-  _justTest(String message) {
+  _showSnackBar(String message, int type) {
     CustomSnackBar.of(context).show(
       message: message,
       onTop: false,
       showCloseIcon: true,
-      prefixIcon: Icons.warning,
-      backgroundColor: CustomColor.error,
+      prefixIcon: type == 1 ? Icons.warning : Icons.check_circle,
+      backgroundColor: type == 1 ? CustomColor.error : CustomColor.success,
       duration: Duration(seconds: 5),
     );
   }

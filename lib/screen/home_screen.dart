@@ -27,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late String _name = "Napoleon Bonaparte";
   late String _idKaryawan = "1";
+  late String _level = "Karyawan";
   bool _isLoading = false;
 
   HomeController _homeController = HomeController();
@@ -53,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _name = value!.nama;
         _idKaryawan = value.idKaryawan;
+        _level = value.level;
       });
     });
   }
@@ -218,126 +220,131 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (!_isLoading)
             Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ResponsiveText(
-                        "Usulan Cuti",
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                            color: CustomColor.gray700,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 24
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => ListMoreScreen(
-                                idKaryawan: _idKaryawan,
-                                title: "Riwayat Cuti",
-                                listType: ListType.leave,
-                              ))
-                          );
-                        },
-                        child: ResponsiveText(
-                          "Lihat Semua",
+            child: RefreshIndicator(
+              onRefresh: () => _getHomeContent(_idKaryawan, _level),
+              color: CustomColor.primary,
+              backgroundColor: Colors.white,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ResponsiveText(
+                          "Usulan Cuti",
                           textAlign: TextAlign.start,
                           style: TextStyle(
-                              color: CustomColor.accentBlue,
+                              color: CustomColor.gray700,
                               fontWeight: FontWeight.w600,
-                              fontSize: 18
+                              fontSize: 24
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 16,),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: _leaveList.length > 5 ? 5 : _leaveList.length,
-                    itemBuilder: (context, index) {
-                      final leave = _leaveList[index];
-                      return LeaveItem(
-                        leave: leave,
-                        onClick: (result) {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => DetailScreen(
-                                title: "Detail Cuti",
-                                leave: result,
-                                canEdit: result.status!.contains("Pengajuan"),
-                              ))
-                          );
-                        },
-                      );
-                    },
-                  ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => ListMoreScreen(
+                                  idKaryawan: _idKaryawan,
+                                  title: "Riwayat Cuti",
+                                  listType: ListType.leave,
+                                ))
+                            );
+                          },
+                          child: ResponsiveText(
+                            "Lihat Semua",
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                                color: CustomColor.accentBlue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 16,),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: _leaveList.length > 5 ? 5 : _leaveList.length,
+                      itemBuilder: (context, index) {
+                        final leave = _leaveList[index];
+                        return LeaveItem(
+                          leave: leave,
+                          onClick: (result) {
+                            Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => DetailScreen(
+                                  title: "Detail Cuti",
+                                  leave: result,
+                                  canEdit: result.status!.contains("Pengajuan"),
+                                ))
+                            );
+                          },
+                        );
+                      },
+                    ),
 
-                  SizedBox(height: 32,),
+                    SizedBox(height: 32,),
 
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ResponsiveText(
-                        "Usulan Lembur",
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                            color: CustomColor.gray700,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 24
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => ListMoreScreen(
-                                idKaryawan: _idKaryawan,
-                                title: "Riwayat Lembur",
-                                listType: ListType.overtime,
-                              ))
-                          );
-                        },
-                        child: ResponsiveText(
-                          "Lihat Semua",
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ResponsiveText(
+                          "Usulan Lembur",
                           textAlign: TextAlign.start,
                           style: TextStyle(
-                              color: CustomColor.accentBlue,
+                              color: CustomColor.gray700,
                               fontWeight: FontWeight.w600,
-                              fontSize: 18
+                              fontSize: 24
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 16,),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: _overtimeList.length > 5 ? 5 : _overtimeList.length,
-                    itemBuilder: (context, index) {
-                      final overtime = _overtimeList[index];
-                      return OvertimeItem(
-                        overtime: overtime,
-                        onClick: (result) {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => DetailScreen(
-                                title: "Detail Lembur",
-                                overtime: result,
-                                canEdit: result.status_approval_direksi == null && result.status_approval_spv == null,
-                                idKaryawan: _idKaryawan,
-                              ))
-                          );
-                        },
-                      );
-                    },
-                  )
-                ],
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => ListMoreScreen(
+                                  idKaryawan: _idKaryawan,
+                                  title: "Riwayat Lembur",
+                                  listType: ListType.overtime,
+                                ))
+                            );
+                          },
+                          child: ResponsiveText(
+                            "Lihat Semua",
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                                color: CustomColor.accentBlue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 16,),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: _overtimeList.length > 5 ? 5 : _overtimeList.length,
+                      itemBuilder: (context, index) {
+                        final overtime = _overtimeList[index];
+                        return OvertimeItem(
+                          overtime: overtime,
+                          onClick: (result) {
+                            Navigator.of(context).push(
+                                MaterialPageRoute(builder: (context) => DetailScreen(
+                                  title: "Detail Lembur",
+                                  overtime: result,
+                                  canEdit: result.status_approval_direksi == null && result.status_approval_spv == null,
+                                  idKaryawan: _idKaryawan,
+                                ))
+                            );
+                          },
+                        );
+                      },
+                    )
+                  ],
+                ),
               ),
             ),
           )

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:fgsdm/constant/custom_colors.dart';
 import 'package:fgsdm/controller/user.dart';
@@ -18,6 +19,7 @@ import '../widget/custom/custom_snackbar.dart';
 import '../widget/responsive/responsive_image.dart';
 import '../widget/responsive/responsive_text.dart';
 import 'list_more_screen.dart';
+import 'package:image/image.dart' as img;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -49,6 +51,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _user = user;
       _imageBase64 = user.avatar!.replaceAll("data:image/png;base64,", "");
     });
+
+    final thumbnailByte = await _getThumbnail(_imageBase64);
+    if (thumbnailByte != null) {
+      await GeneralHelper.preferences.setString("avatarThumbnail", base64Encode(thumbnailByte));
+    }
+  }
+
+  Future<Uint8List?> _getThumbnail(String base64Image) async {
+    Uint8List bytes = base64Decode(base64Image);
+
+    img.Image? imageTemp = img.decodeImage(bytes);
+    if (imageTemp != null) {
+      img.Image thumbnail = img.copyResize(imageTemp, width: 32, height: 32);
+      final thumbnailBytes = img.encodeJpg(thumbnail);
+
+      return Uint8List.fromList(thumbnailBytes);
+    }
+    return null;
   }
 
   void _initializeUser() async {
@@ -85,18 +105,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               if (isReload) _updateAvatar();
                             },
                           ))
-                        );
+                        ).then((onValue) {
+                          if (GeneralHelper.isProfileUpdate) {
+                            GeneralHelper.isProfileUpdate = false;
+                            _updateAvatar();
+                          }
+                        });
                       },
-                      child: ResponsiveContainer(
-                        height: 150,
-                        width: 150,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: CustomColor.primary,
-                        ),
-                        child: ClipRRect(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: ResponsiveContainer(
+                          height: 150,
+                          width: 150,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           child: _buildImage(),
-                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                     ),

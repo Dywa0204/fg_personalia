@@ -25,6 +25,7 @@ class GeneralHelper {
   static late double scalingFactorDivide = 500;
   static late double scalingPercentage;
   static bool isSettingUpdate = false;
+  static bool isProfileUpdate = false;
   static bool isUseAlert = true;
 
   static Future<void> initializeApp() async {

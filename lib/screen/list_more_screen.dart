@@ -124,11 +124,6 @@ class _ListMoreScreenState extends State<ListMoreScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 16,),
-                  if (widget.listType == ListType.attendance) InkWell(
-                    onTap: () {},
-                    child: ResponsiveIcon(Icons.search, color: Colors.black, size: 28),
-                  ),
                   SizedBox(width: 8,),
                   InkWell(
                     onTap: () {
