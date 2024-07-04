@@ -249,11 +249,12 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                 if (Platform.isIOS) {
                   _pickerIOS.openCamera(
                     cameraOptions: HLCameraOptions(
-                      compressQuality: 0.4,
+                      compressQuality: 0.3,
                       cameraType: CameraType.image
                     ),
                     cropping: true,
                     cropOptions: const HLCropOptions(
+                      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
                       aspectRatioPresets: [CropAspectRatioPreset.square],
                     ),
                   ).then((image) {
@@ -263,11 +264,12 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                 } else {
                   _picker.openCamera(
                     cameraOptions: HLCameraOptions(
-                      compressQuality: 0.4,
+                      compressQuality: 0.3,
                       cameraType: CameraType.image
                     ),
                     cropping: true,
                     cropOptions: const HLCropOptions(
+                      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
                       aspectRatioPresets: [CropAspectRatioPreset.square],
                     ),
                   ).then((image) {
@@ -279,23 +281,37 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                 if (Platform.isIOS) {
                   _pickerIOS.openPicker(
                     pickerOptions: HLPickerOptions(
+                        compressQuality: 0.3,
                         mediaType: MediaType.image,
                         usedCameraButton: false,
                         maxSelectedAssets: 1
                     ),
+                    cropping: true,
+                    cropOptions: const HLCropOptions(
+                      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                      aspectRatioPresets: [CropAspectRatioPreset.square],
+                    ),
                   ).then((images) {
                     HLPickerItem selected = images.first;
+                    _convertImageToBase64(selected);
                     // _cropImage(item: selected);
                   });
                 } else {
                   _picker.openPicker(
                     pickerOptions: HLPickerOptions(
+                        compressQuality: 0.3,
                         mediaType: MediaType.image,
                         usedCameraButton: false,
                         maxSelectedAssets: 1
                     ),
+                    cropping: true,
+                    cropOptions: const HLCropOptions(
+                      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                      aspectRatioPresets: [CropAspectRatioPreset.square],
+                    ),
                   ).then((images) {
                     HLPickerItem selected = images.first;
+                    _convertImageToBase64(selected);
                     // _cropImage(item: selected);
                   });
                 }
