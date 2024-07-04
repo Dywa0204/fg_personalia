@@ -20,18 +20,22 @@ jobs:
       - name: Flutter Pub Get
         run: flutter pub get
 
-      - name: Flutter Doctor
-        run: flutter doctor -v
+      - name: Ensure Generated.xcconfig Exists
+        run: |
+          if [ ! -f "ios/Flutter/Generated.xcconfig" ]; then
+            echo "Generated.xcconfig does not exist. Running flutter pub get again."
+            flutter pub get
+          fi
 
       - name: Clean Build
         run: flutter clean
 
-      - name: Install CocoaPods
-        run: pod install
+      - name: Update CocoaPods Repo
+        run: pod repo update
         working-directory: ios
 
-      - name: Update CocoaPods
-        run: pod repo update
+      - name: Install CocoaPods
+        run: pod install
         working-directory: ios
 
       - name: Build iOS App
