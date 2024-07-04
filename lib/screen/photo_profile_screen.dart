@@ -427,10 +427,10 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
       LoadingDialog.of(context).hide();
 
       setState(() {
-        _thumbnail = _thumbnailTemp;
+        _thumbnail = null;
       });
 
-      _showSnackBar(e.toString(), 1);
+      _showSnackBar("Gagal! Ukuran foto terlalu besar", 1);
     }
   }
 
