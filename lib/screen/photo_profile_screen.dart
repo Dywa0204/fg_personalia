@@ -9,7 +9,6 @@ import 'package:image/image.dart' as img;
 import 'package:fgsdm/widget/bottom_slide_up.dart';
 import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
-import 'package:image_cropper/image_cropper.dart' as image_cropper;
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -43,6 +42,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
   final _pickerIOS = HLImagePickerIOS();
   HLPickerItem? _selectedImage;
   String? _thumbnail;
+  String? _thumbnailTemp;
 
   UserController _userController = UserController();
 
@@ -248,19 +248,31 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
               if (text == "Kamera") {
                 if (Platform.isIOS) {
                   _pickerIOS.openCamera(
-                      cameraOptions: HLCameraOptions(
-                          cameraType: CameraType.image
-                      )
+                    cameraOptions: HLCameraOptions(
+                      compressQuality: 0.4,
+                      cameraType: CameraType.image
+                    ),
+                    cropping: true,
+                    cropOptions: const HLCropOptions(
+                      aspectRatioPresets: [CropAspectRatioPreset.square],
+                    ),
                   ).then((image) {
-                    _cropImage(item: image);
+                    _convertImageToBase64(image);
+                    // _cropImage(item: image);
                   });
                 } else {
                   _picker.openCamera(
-                      cameraOptions: HLCameraOptions(
-                          cameraType: CameraType.image
-                      )
+                    cameraOptions: HLCameraOptions(
+                      compressQuality: 0.4,
+                      cameraType: CameraType.image
+                    ),
+                    cropping: true,
+                    cropOptions: const HLCropOptions(
+                      aspectRatioPresets: [CropAspectRatioPreset.square],
+                    ),
                   ).then((image) {
-                    _cropImage(item: image);
+                    _convertImageToBase64(image);
+                    // _cropImage(item: image);
                   });
                 }
               } else {
@@ -273,7 +285,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                     ),
                   ).then((images) {
                     HLPickerItem selected = images.first;
-                    _cropImage(item: selected);
+                    // _cropImage(item: selected);
                   });
                 } else {
                   _picker.openPicker(
@@ -284,7 +296,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
                     ),
                   ).then((images) {
                     HLPickerItem selected = images.first;
-                    _cropImage(item: selected);
+                    // _cropImage(item: selected);
                   });
                 }
               }
@@ -315,41 +327,41 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
     );
   }
 
-  Future<void> _cropImage({required HLPickerItem item}) async {
-    try {
-      image_cropper.CroppedFile? croppedFile = await image_cropper.ImageCropper().cropImage(
-        sourcePath: item.path,
-        uiSettings: [
-          image_cropper.AndroidUiSettings(
-            toolbarTitle: 'Crop Foto',
-            toolbarColor: CustomColor.secondary,
-            toolbarWidgetColor: Colors.black,
-            lockAspectRatio: true,
-            initAspectRatio: image_cropper.CropAspectRatioPreset.square,
-            aspectRatioPresets: [
-              image_cropper.CropAspectRatioPreset.square
-            ],
-          ),
-          image_cropper.IOSUiSettings(
-            title: 'Crop Foto',
-            aspectRatioPresets: [
-              image_cropper.CropAspectRatioPreset.square,
-            ],
-          ),
-        ],
-      );
-
-      _selectedImage = HLPickerItem(
-        path: croppedFile!.path,
-        id: "", name: "name", mimeType: "mimeType", size: 0, width: 0,
-        height: 0, type: "type"
-      );
-      _convertImageToBase64(_selectedImage!);
-
-    } catch (e) {
-      print(e.toString());
-    }
-  }
+  // Future<void> _cropImage({required HLPickerItem item}) async {
+  //   try {
+  //     image_cropper.CroppedFile? croppedFile = await image_cropper.ImageCropper().cropImage(
+  //       sourcePath: item.path,
+  //       uiSettings: [
+  //         image_cropper.AndroidUiSettings(
+  //           toolbarTitle: 'Crop Foto',
+  //           toolbarColor: CustomColor.secondary,
+  //           toolbarWidgetColor: Colors.black,
+  //           lockAspectRatio: true,
+  //           initAspectRatio: image_cropper.CropAspectRatioPreset.square,
+  //           aspectRatioPresets: [
+  //             image_cropper.CropAspectRatioPreset.square
+  //           ],
+  //         ),
+  //         image_cropper.IOSUiSettings(
+  //           title: 'Crop Foto',
+  //           aspectRatioPresets: [
+  //             image_cropper.CropAspectRatioPreset.square,
+  //           ],
+  //         ),
+  //       ],
+  //     );
+  //
+  //     _selectedImage = HLPickerItem(
+  //       path: croppedFile!.path,
+  //       id: "", name: "name", mimeType: "mimeType", size: 0, width: 0,
+  //       height: 0, type: "type"
+  //     );
+  //     _convertImageToBase64(_selectedImage!);
+  //
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   Future<void> _convertImageToBase64(HLPickerItem image) async {
     _slideUpPanelController.close();
@@ -367,17 +379,19 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
           _thumbnail = base64Encode(thumbnailByte);
         });
 
-        await GeneralHelper.preferences.setString("avatarThumbnail", base64Encode(thumbnailByte));
-
+        print("ini base : ${base64}");
         bool isSuccess = await _userController.changeAvatar(idKaryawan: widget.idKaryawan, base64: base64);
 
         LoadingDialog.of(context).hide();
         if (isSuccess) {
+          await GeneralHelper.preferences.setString("avatarThumbnail", base64Encode(thumbnailByte));
+
           setState(() {
             _thumbnail = null;
             _imageBase64 = "";
             _isCanDelete = true;
             _isEdited = true;
+            _selectedImage = image;
           });
           GeneralHelper.isProfileUpdate = true;
           _showSnackBar("Berhasil mengupload foto", 2);
@@ -396,7 +410,11 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
     } catch (e) {
       LoadingDialog.of(context).hide();
 
-      _showSnackBar("Gagal memuat foto", 1);
+      setState(() {
+        _thumbnail = _thumbnailTemp;
+      });
+
+      _showSnackBar(e.toString().contains("Request Entity Too Large") ? "Gagal! Ukuran foto terlalu besar" : "Gagal memuat foto", 1);
     }
   }
 

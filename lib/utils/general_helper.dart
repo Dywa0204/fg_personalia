@@ -27,6 +27,7 @@ class GeneralHelper {
   static bool isSettingUpdate = false;
   static bool isProfileUpdate = false;
   static bool isUseAlert = true;
+  static bool isLockSalary = false;
 
   static Future<void> initializeApp() async {
     preferences = await SharedPreferences.getInstance();
@@ -135,5 +136,12 @@ class GeneralHelper {
 
     preferences = await SharedPreferences.getInstance();
     preferences.setBool("isUseAlert", isUse);
+  }
+
+  static setLockSalary(bool isLock) async {
+    isLockSalary = isLock;
+
+    preferences = await SharedPreferences.getInstance();
+    preferences.setBool("isLockSalary", isLock);
   }
 }

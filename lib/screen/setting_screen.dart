@@ -4,6 +4,7 @@ import 'package:fgsdm/utils/general_helper.dart';
 import 'package:fgsdm/widget/custom/custom_card.dart';
 import 'package:flutter/material.dart';
 
+import '../widget/custom/custom_form_field.dart';
 import '../widget/responsive/responsive_icon.dart';
 import '../widget/responsive/responsive_text.dart';
 
@@ -19,6 +20,10 @@ class _SettingScreenState extends State<SettingScreen> {
   double _sizeValue = GeneralHelper.scalingPercentage;
   double _sizeValueTemp = GeneralHelper.scalingPercentage;
   bool _isAlert = GeneralHelper.isUseAlert;
+  bool _isLockSalary = GeneralHelper.isLockSalary;
+
+  TextEditingController passwordController = TextEditingController();
+  final CustomFormFieldController formFieldController = CustomFormFieldController();
 
   @override
   Widget build(BuildContext context) {
@@ -134,9 +139,69 @@ class _SettingScreenState extends State<SettingScreen> {
                 ),
               ),
               SizedBox(height: 24,),
+
+              CustomCard(
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ResponsiveIcon(Icons.lock, color: Colors.black,),
+                        SizedBox(width: 16,),
+                        Expanded(
+                          child: ResponsiveText(
+                            "Gunakan password untuk melihat gaji",
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16,),
+                        Switch(
+                          value: _isLockSalary,
+                          activeColor: CustomColor.success,
+                          onChanged: (bool value) {
+                            _passwordDialog();
+                            // GeneralHelper.setLockSalary(value);
+                            // setState(() {
+                            //   _isLockSalary = value;
+                            // });
+                          },
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 24,),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _passwordDialog() {
+    return AlertDialog(
+      title: Text('Gunakan Password'),
+      content: Row(
+        children: [
+          CustomFormField(
+            obscureText: true,
+            hint: "Password",
+            prefixIcon: Icons.lock,
+            suffixImage: "invisible",
+            controller: passwordController,
+            formFieldController: formFieldController,
+            suffixIconCallback: () {
+              bool isTextObscured = formFieldController.getObscureText() ?? false;
+              formFieldController.setSuffixIcon(image: isTextObscured ? "visible" : "invisible");
+              formFieldController.setObscureText(!isTextObscured);
+            },
+          ),
+        ],
       ),
     );
   }
