@@ -414,7 +414,7 @@ class _PhotoProfileScreenState extends State<PhotoProfileScreen> {
         _thumbnail = _thumbnailTemp;
       });
 
-      _showSnackBar(e.toString().contains("Request Entity Too Large") ? "Gagal! Ukuran foto terlalu besar" : "Gagal memuat foto", 1);
+      _showSnackBar(e.toString(), 1);
     }
   }
 

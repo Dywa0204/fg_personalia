@@ -77,6 +77,7 @@ class UserController {
       final Map<String, dynamic> json = jsonDecode(response.body);
       return json["status"];
     } else {
+      throw(response);
       print("Change Avatar error: ${response.reasonPhrase}");
       throw "Gagal mengubah foto profil! Terjadi kesalahan internal server";
     }
