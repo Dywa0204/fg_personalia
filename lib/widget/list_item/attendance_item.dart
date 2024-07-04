@@ -259,7 +259,7 @@ class AttendanceItem extends StatelessWidget {
         message = lateStr.isNotEmpty ? "Terlambat ${lateStr}" : "Tepat waktu";
         color = lateStr.isNotEmpty ? CustomColor.warn : CustomColor.success;
         if (keluar == "00:00") {
-          message = "${message}, belum presesnsi pulang";
+          message = "${message}, belum presensi pulang";
         } else {
           DateTime timeIn = DateTime.parse("2024-01-01 $masuk:00");
           DateTime timeOut = DateTime.parse("2024-01-01 $keluar:00");

@@ -2,15 +2,21 @@ import 'package:fgsdm/constant/custom_colors.dart';
 import 'package:fgsdm/screen/main_screen.dart';
 import 'package:fgsdm/utils/general_helper.dart';
 import 'package:fgsdm/widget/custom/custom_card.dart';
+import 'package:fgsdm/widget/custom/custom_mini_button.dart';
 import 'package:flutter/material.dart';
 
+import '../controller/user.dart';
+import '../model/user.dart';
 import '../widget/custom/custom_form_field.dart';
+import '../widget/custom/custom_snackbar.dart';
+import '../widget/loading_dialog.dart';
 import '../widget/responsive/responsive_icon.dart';
 import '../widget/responsive/responsive_text.dart';
 
 class SettingScreen extends StatefulWidget {
   final BuildContext context;
-  const SettingScreen({Key? key, required this.context}) : super(key: key);
+  final String username;
+  const SettingScreen({Key? key, required this.context, required this.username}) : super(key: key);
 
   @override
   State<SettingScreen> createState() => _SettingScreenState();
@@ -24,6 +30,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
   TextEditingController passwordController = TextEditingController();
   final CustomFormFieldController formFieldController = CustomFormFieldController();
+  final UserController userController = new UserController();
 
   @override
   Widget build(BuildContext context) {
@@ -163,11 +170,11 @@ class _SettingScreenState extends State<SettingScreen> {
                           value: _isLockSalary,
                           activeColor: CustomColor.success,
                           onChanged: (bool value) {
-                            _passwordDialog();
-                            // GeneralHelper.setLockSalary(value);
-                            // setState(() {
-                            //   _isLockSalary = value;
-                            // });
+                            showDialog(
+                              context: context,
+                              builder: (context) => _passwordDialog(context)
+                            );
+
                           },
                         )
                       ],
@@ -183,26 +190,106 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  Widget _passwordDialog() {
+  Widget _passwordDialog(BuildContext context) {
     return AlertDialog(
+      backgroundColor: Colors.white,
       title: Text('Gunakan Password'),
-      content: Row(
-        children: [
-          CustomFormField(
-            obscureText: true,
-            hint: "Password",
-            prefixIcon: Icons.lock,
-            suffixImage: "invisible",
-            controller: passwordController,
-            formFieldController: formFieldController,
-            suffixIconCallback: () {
-              bool isTextObscured = formFieldController.getObscureText() ?? false;
-              formFieldController.setSuffixIcon(image: isTextObscured ? "visible" : "invisible");
-              formFieldController.setObscureText(!isTextObscured);
-            },
-          ),
-        ],
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.8,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomFormField(
+              obscureText: true,
+              hint: "Password",
+              prefixIcon: Icons.lock,
+              suffixImage: "invisible",
+              controller: passwordController,
+              formFieldController: formFieldController,
+              suffixIconCallback: () {
+                bool isTextObscured = formFieldController.getObscureText() ?? false;
+                formFieldController.setSuffixIcon(image: isTextObscured ? "visible" : "invisible");
+                formFieldController.setObscureText(!isTextObscured);
+              },
+            ),
+            SizedBox(height: 12,),
+            Row(
+              children: [
+                Expanded(child: Container()),
+                CustomMiniButton(
+                  child: Text("Batal", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14),),
+                  color: CustomColor.gray400,
+                  onClick: () {
+                    Navigator.of(context).pop();
+                  },
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+                ),
+                CustomMiniButton(
+                  child: Text("Oke", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14),),
+                  color: CustomColor.success,
+                  onClick: () {
+                    _checkPassword();
+                  },
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+                )
+              ],
+            )
+          ],
+        ),
       ),
     );
+  }
+
+  _checkPassword() async {
+    try {
+      String password = passwordController.text;
+
+      if (password == "") {
+        CustomSnackBar.of(context).show(
+            message: "Harap isi password",
+            onTop: true,
+            showCloseIcon: true,
+            prefixIcon: Icons.warning,
+            backgroundColor: CustomColor.error
+        );
+      } else {
+        LoadingDialog.of(context).show(message: "Tunggu Sebentar...", isDismissible: true);
+
+        await userController.login(
+            username: widget.username,
+            password: password
+        );
+
+        FocusManager.instance.primaryFocus?.unfocus();
+
+        LoadingDialog.of(context).hide();
+        Navigator.of(context).pop();
+        CustomSnackBar.of(context).show(
+            message: "Berhasil!",
+            onTop: true,
+            showCloseIcon: true,
+            prefixIcon: Icons.check_circle,
+            backgroundColor: CustomColor.success
+        );
+
+        FocusManager.instance.primaryFocus?.unfocus();
+
+        GeneralHelper.setLockSalary(!_isLockSalary);
+        setState(() {
+          _isLockSalary = !_isLockSalary;
+        });
+        passwordController.text = "";
+      }
+    } catch (error) {
+      print(error);
+      LoadingDialog.of(context).hide();
+      CustomSnackBar.of(context).show(
+          message: error.toString().contains("Password") ? "Gagal! Password salah" : error.toString(),
+          onTop: true,
+          showCloseIcon: true,
+          prefixIcon: error.toString().contains("koneksi") ? Icons.wifi : Icons.warning,
+          backgroundColor: CustomColor.error
+      );
+    }
   }
 }

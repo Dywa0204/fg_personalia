@@ -45,6 +45,7 @@ class GeneralHelper {
     scalingFactorDivide = 500 * (200 - scalingPercentage) / 100;
 
     isUseAlert = preferences.getBool("isUseAlert") ?? true;
+    isLockSalary = preferences.getBool("isLockSalary") ?? false;
   }
 
   static Future<void> initializeFirstCamera() async {
